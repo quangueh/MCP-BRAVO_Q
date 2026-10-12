@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bravo ERP - Report Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+      color: white; padding: 16px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header .server-info { font-size: 12px; opacity: 0.8; }
+
+    /* Navigation */
+    .nav {
+      background: white; border-bottom: 1px solid #e0e0e0;
+      display: flex; gap: 0; padding: 0 24px;
+    }
+    .nav-item {
+      padding: 12px 20px; cursor: pointer; font-size: 14px;
+      border-bottom: 3px solid transparent; transition: all 0.2s;
+    }
+    .nav-item:hover { background: #f5f5f5; }
+    .nav-item.active { border-bottom-color: #1a237e; color: #1a237e; font-weight: 600; }
+
+    /* Main Content */
+    .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    /* Dashboard */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: white; border-radius: 8px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .kpi-card .label { font-size: 12px; color: #666; text-transform: uppercase; }
+    .kpi-card .value { font-size: 28px; font-weight: 700; color: #1a237e; margin-top: 8px; }
+    .kpi-card .icon { float: right; font-size: 24px; opacity: 0.3; }
+
+    .chart-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    .chart-card {
+      background: white; border-radius: 8px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .chart-card h3 { font-size: 14px; color: #333; margin-bottom: 16px; }
+
+    /* Data Browser */
+    .data-controls {
+      display: flex; gap: 12px; margin-bottom: 16px; align-items: center;
+      flex-wrap: wrap;
+    }
+    .data-controls select, .data-controls input {
+      padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;
+      font-size: 14px;
+    }
+    .data-controls select { min-width: 200px; }
+
+    .btn {
+      padding: 8px 16px; border: none; border-radius: 4px;
+      cursor: pointer; font-size: 13px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #1a237e; color: white; }
+    .btn-primary:hover { background: #0d47a1; }
+    .btn-success { background: #2e7d32; color: white; }
+    .btn-success:hover { background: #1b5e20; }
+    .btn-danger { background: #c62828; color: white; }
+    .btn-danger:hover { background: #b71c1c; }
+    .btn-outline { background: white; border: 1px solid #ddd; color: #333; }
+    .btn-outline:hover { background: #f5f5f5; }
+
+    /* Table */
+    .table-container {
+      background: white; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .table-header {
+      padding: 12px 16px; border-bottom: 1px solid #e0e0e0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-header h3 { font-size: 14px; color: #333; }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    th {
+      background: #f5f5f5; padding: 10px 12px; text-align: left;
+      font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0;
+      position: sticky; top: 0;
+    }
+    td {
+      padding: 8px 12px; border-bottom: 1px solid #f0f0f0;
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    tr:hover { background: #f8f9ff; }
+
+    .table-scroll {
+      max-height: 500px; overflow-y: auto;
+    }
+
+    .pagination {
+      padding: 12px 16px; border-top: 1px solid #e0e0e0;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .pagination-info { font-size: 13px; color: #666; }
+
+    /* Query Editor */
+    .query-editor {
+      background: white; border-radius: 8px; padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px;
+    }
+    .query-editor textarea {
+      width: 100%; height: 120px; padding: 12px; border: 1px solid #ddd;
+      border-radius: 4px; font-family: 'Consolas', monospace; font-size: 13px;
+      resize: vertical;
+    }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Loading */
+    .loading {
+      text-align: center; padding: 40px; color: #666;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3; border-top: 3px solid #1a237e;
+      border-radius: 50%; width: 30px; height: 30px;
+      animation: spin 1s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Error */
+    .error { color: #c62828; padding: 12px; background: #ffebee; border-radius: 4px; }
+
+    /* Table list sidebar */
+    .table-list {
+      background: white; border-radius: 8px; padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px;
+    }
+    .table-list h3 { font-size: 14px; margin-bottom: 12px; }
+    .table-list-item {
+      padding: 8px 12px; cursor: pointer; border-radius: 4px;
+      font-size: 13px; display: flex; justify-content: space-between;
+    }
+    .table-list-item:hover { background: #f0f2f5; }
+    .table-list-item.active { background: #e8eaf6; color: #1a237e; }
+    .table-list-item .count { color: #999; font-size: 11px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Bravo ERP - Report Dashboard</h1>
+      <div class="server-info">your-sql-server:1433 | Database: Bravo_Data</div>
+    </div>
+    <div>
+      <button class="btn btn-outline" onclick="location.reload()" style="color:white;border-color:rgba(255,255,255,0.3)">Refresh</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item active" onclick="showSection('dashboard')">Dashboard</div>
+    <div class="nav-item" onclick="showSection('data')">Data Browser</div>
+    <div class="nav-item" onclick="showSection('query')">Custom Query</div>
+    <div class="nav-item" onclick="window.location.href='/financial.html'">Báo cáo Tài chính</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD SECTION -->
+    <div id="section-dashboard" class="section active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="icon">&#128100;</div>
+          <div class="label">Customers</div>
+          <div class="value" id="kpi-customers">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="icon">&#128230;</div>
+          <div class="label">Items/Products</div>
+          <div class="value" id="kpi-items">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="icon">&#128101;</div>
+          <div class="label">Employees</div>
+          <div class="value" id="kpi-employees">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="icon">&#127981;</div>
+          <div class="label">Vendors</div>
+          <div class="value" id="kpi-vendors">-</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Database Overview</h3>
+          <canvas id="chart-overview"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Table Categories</h3>
+          <canvas id="chart-categories"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Top Tables by Columns</h3>
+          <canvas id="chart-tables"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Data Types Distribution</h3>
+          <canvas id="chart-datatypes"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA BROWSER SECTION -->
+    <div id="section-data" class="section">
+      <div class="data-controls">
+        <select id="db-select" onchange="loadTables()">
+          <option value="Bravo_Config">Bravo_Config (Config)</option>
+          <option value="Bravo_Data">Bravo_Data (Transactions)</option>
+        </select>
+        <select id="table-select" onchange="loadTableData()">
+          <option value="">-- Select Table --</option>
+        </select>
+        <input type="text" id="search-input" placeholder="Search..." onkeypress="if(event.key==='Enter')loadTableData()">
+        <button class="btn btn-primary" onclick="loadTableData()">Search</button>
+        <button class="btn btn-success" onclick="exportExcel()">Export Excel</button>
+        <button class="btn btn-danger" onclick="exportPDF()">Export PDF</button>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <h3 id="table-title">Select a table</h3>
+          <span id="row-count" style="font-size:12px;color:#999"></span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <div class="pagination-info" id="pagination-info"></div>
+          <div>
+            <button class="btn btn-outline" onclick="prevPage()">Previous</button>
+            <button class="btn btn-outline" onclick="nextPage()">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUERY SECTION -->
+    <div id="section-query" class="section">
+      <div class="query-editor">
+        <h3 style="margin-bottom:12px;font-size:14px">Custom SQL Query (SELECT only)</h3>
+        <textarea id="sql-query" placeholder="SELECT TOP 100 * FROM B20Customer"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <select id="query-db">
+            <option value="Bravo_Config">Bravo_Config</option>
+            <option value="Bravo_Data">Bravo_Data</option>
+          </select>
+          <button class="btn btn-primary" onclick="runQuery()">Execute</button>
+          <button class="btn btn-success" onclick="exportQueryExcel()">Export Excel</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <h3>Query Results</h3>
+          <span id="query-count" style="font-size:12px;color:#999"></span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead id="query-head"></thead>
+            <tbody id="query-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API = '';
+    let currentPage = 1;
+    let currentTable = '';
+    let currentDb = '';
+    let queryResult = null;
+
+    // ============ NAVIGATION ============
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('section-' + name).classList.add('active');
+      event.target.classList.add('active');
+
+      if (name === 'dashboard') loadDashboard();
+      if (name === 'data') loadTables();
+    }
+
+    // ============ DASHBOARD ============
+    async function loadDashboard() {
+      try {
+        const res = await fetch(API + '/api/dashboard');
+        const data = await res.json();
+
+        document.getElementById('kpi-customers').textContent = data.customers?.toLocaleString() || '-';
+        document.getElementById('kpi-items').textContent = data.items?.toLocaleString() || '-';
+        document.getElementById('kpi-employees').textContent = data.employees?.toLocaleString() || '-';
+        document.getElementById('kpi-vendors').textContent = data.vendors?.toLocaleString() || '-';
+
+        loadCharts();
+      } catch (err) {
+        console.error('Dashboard error:', err);
+      }
+    }
+
+    function loadCharts() {
+      // Overview chart
+      new Chart(document.getElementById('chart-overview'), {
+        type: 'bar',
+        data: {
+          labels: ['Bravo_Config', 'Bravo_Data'],
+          datasets: [{
+            label: 'Tables',
+            data: [213, 831],
+            backgroundColor: ['#1a237e', '#0d47a1']
+          }, {
+            label: 'Views',
+            data: [1593, 7],
+            backgroundColor: ['#42a5f5', '#90caf9']
+          }, {
+            label: 'Procedures',
+            data: [2253, 18],
+            backgroundColor: ['#66bb6a', '#a5d6a7']
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Categories chart
+      new Chart(document.getElementById('chart-categories'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Master Data', 'Transactions', 'HR', 'Accounting', 'Config', 'Other'],
+          datasets: [{
+            data: [150, 400, 80, 60, 50, 291],
+            backgroundColor: ['#1a237e', '#0d47a1', '#42a5f5', '#66bb6a', '#ffa726', '#ef5350']
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Top tables
+      new Chart(document.getElementById('chart-tables'), {
+        type: 'bar',
+        data: {
+          labels: ['B30AccDoc', 'B30BizDoc', 'B30HrmPayroll', 'B20Item', 'B20Customer'],
+          datasets: [{
+            label: 'Columns',
+            data: [85, 72, 65, 58, 45],
+            backgroundColor: '#1a237e'
+          }]
+        },
+        options: { responsive: true, indexAxis: 'y' }
+      });
+
+      // Data types
+      new Chart(document.getElementById('chart-datatypes'), {
+        type: 'pie',
+        data: {
+          labels: ['nvarchar', 'int', 'datetime', 'bit', 'decimal', 'float'],
+          datasets: [{
+            data: [45, 20, 15, 10, 5, 5],
+            backgroundColor: ['#1a237e', '#0d47a1', '#42a5f5', '#66bb6a', '#ffa726', '#ef5350']
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    // ============ DATA BROWSER ============
+    async function loadTables() {
+      const db = document.getElementById('db-select').value;
+      const select = document.getElementById('table-select');
+      select.innerHTML = '<option value="">Loading...</option>';
+
+      try {
+        const res = await fetch(API + `/api/tables/${db}`);
+        const tables = await res.json();
+
+        select.innerHTML = '<option value="">-- Select Table (' + tables.length + ' tables) --</option>';
+        tables.forEach(t => {
+          select.innerHTML += `<option value="${t.TABLE_NAME}">${t.TABLE_NAME} (${t.ColumnCount} cols)</option>`;
+        });
+      } catch (err) {
+        select.innerHTML = '<option value="">Error loading tables</option>';
+      }
+    }
+
+    async function loadTableData(page = 1) {
+      const db = document.getElementById('db-select').value;
+      const table = document.getElementById('table-select').value;
+      const search = document.getElementById('search-input').value;
+
+      if (!table) return;
+
+      currentDb = db;
+      currentTable = table;
+      currentPage = page;
+
+      document.getElementById('table-title').textContent = `${db} / ${table}`;
+      document.getElementById('table-head').innerHTML = '<tr><td colspan="100" class="loading"><div class="spinner"></div>Loading...</td></tr>';
+      document.getElementById('table-body').innerHTML = '';
+
+      try {
+        const res = await fetch(API + `/api/table/${db}/${table}?page=${page}&pageSize=50&search=${encodeURIComponent(search)}`);
+        const result = await res.json();
+
+        if (result.error) throw new Error(result.error);
+
+        // Headers
+        const thead = document.getElementById('table-head');
+        thead.innerHTML = '<tr>' + result.columns.map(c =>
+          `<th title="${c.type}">${c.name}</th>`
+        ).join('') + '</tr>';
+
+        // Data
+        const tbody = document.getElementById('table-body');
+        if (result.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="100" style="text-align:center;padding:40px;color:#999">No data</td></tr>';
+        } else {
+          tbody.innerHTML = result.data.map(row =>
+            '<tr>' + result.columns.map(c => {
+              let val = row[c.name];
+              if (val === null || val === undefined) val = '';
+              else if (typeof val === 'object') val = JSON.stringify(val);
+              else val = String(val);
+              return `<td title="${val}">${val}</td>`;
+            }).join('') + '</tr>'
+          ).join('');
+        }
+
+        // Pagination
+        const totalPages = Math.ceil(result.total / result.pageSize);
+        document.getElementById('row-count').textContent =
+          `${result.total.toLocaleString()} rows | Page ${result.page}/${totalPages}`;
+        document.getElementById('pagination-info').textContent =
+          `Showing ${(result.page-1)*result.pageSize+1}-${Math.min(result.page*result.pageSize, result.total)} of ${result.total.toLocaleString()}`;
+
+      } catch (err) {
+        document.getElementById('table-head').innerHTML = '';
+        document.getElementById('table-body').innerHTML =
+          `<tr><td colspan="100"><div class="error">${err.message}</div></td></tr>`;
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) loadTableData(currentPage - 1);
+    }
+
+    function nextPage() {
+      loadTableData(currentPage + 1);
+    }
+
+    // ============ EXPORT ============
+    function exportExcel() {
+      if (!currentTable) return alert('Select a table first');
+      fetch(API + '/api/export/excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ database: currentDb, tableName: currentTable })
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = currentTable + '.xlsx'; a.click();
+      });
+    }
+
+    function exportPDF() {
+      if (!currentTable) return alert('Select a table first');
+      fetch(API + '/api/export/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ database: currentDb, tableName: currentTable })
+      })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = currentTable + '.pdf'; a.click();
+      });
+    }
+
+    // ============ QUERY ============
+    async function runQuery() {
+      const db = document.getElementById('query-db').value;
+      const query = document.getElementById('sql-query').value.trim();
+
+      if (!query) return alert('Enter a query');
+
+      document.getElementById('query-head').innerHTML = '<tr><td colspan="100" class="loading"><div class="spinner"></div>Executing...</td></tr>';
+      document.getElementById('query-body').innerHTML = '';
+
+      try {
+        const res = await fetch(API + '/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ database: db, query })
+        });
+        const result = await res.json();
+
+        if (result.error) throw new Error(result.error);
+
+        queryResult = result;
+
+        const thead = document.getElementById('query-head');
+        thead.innerHTML = '<tr>' + result.columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+
+        const tbody = document.getElementById('query-body');
+        tbody.innerHTML = result.data.map(row =>
+          '<tr>' + result.columns.map(c => {
+            let val = row[c];
+            if (val === null || val === undefined) val = '';
+            else if (typeof val === 'object') val = JSON.stringify(val);
+            else val = String(val);
+            return `<td title="${val}">${val}</td>`;
+          }).join('') + '</tr>'
+        ).join('');
+
+        document.getElementById('query-count').textContent = `${result.rowCount} rows`;
+
+      } catch (err) {
+        document.getElementById('query-head').innerHTML = '';
+        document.getElementById('query-body').innerHTML =
+          `<tr><td colspan="100"><div class="error">${err.message}</div></td></tr>`;
+      }
+    }
+
+    function exportQueryExcel() {
+      if (!queryResult) return alert('Run a query first');
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(queryResult.data);
+      XLSX.utils.book_append_sheet(wb, ws, 'QueryResult');
+      XLSX.writeFile(wb, 'query_result.xlsx');
+    }
+
+    // Load dashboard on start
+    loadDashboard();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</body>
+</html>

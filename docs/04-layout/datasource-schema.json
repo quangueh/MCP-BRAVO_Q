@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bravo DataSource XML Schema",
+  "description": "JSON Schema definition for Bravo ERP DataSource XML structure",
+  "type": "object",
+  "properties": {
+    "TableCollection": {
+      "type": "array",
+      "description": "Collection of table/data source definitions",
+      "items": {
+        "$ref": "#/definitions/CtElement"
+      }
+    },
+    "SourceCollection": {
+      "type": "array",
+      "description": "Sub-queries and derived data sources",
+      "items": {
+        "$ref": "#/definitions/SourceElement"
+      }
+    },
+    "JoinCollection": {
+      "type": "array",
+      "description": "LEFT JOIN definitions for master data lookups",
+      "items": {
+        "$ref": "#/definitions/JoinElement"
+      }
+    },
+    "ChildCollection": {
+      "type": "array",
+      "description": "Master-detail relationship definitions",
+      "items": {
+        "$ref": "#/definitions/ChildElement"
+      }
+    },
+    "Evaluators": {
+      "type": "array",
+      "description": "Command handler definitions for toolbar actions",
+      "items": {
+        "$ref": "#/definitions/EvaluatorElement"
+      }
+    },
+    "Validators": {
+      "type": "array",
+      "description": "Data validation rules",
+      "items": {
+        "$ref": "#/definitions/ValidatorElement"
+      }
+    },
+    "TempColumns": {
+      "type": "array",
+      "description": "Computed/virtual column definitions",
+      "items": {
+        "$ref": "#/definitions/TempColumnElement"
+      }
+    },
+    "CommandCollection": {
+      "type": "array",
+      "description": "INSERT/UPDATE/DELETE command definitions",
+      "items": {
+        "$ref": "#/definitions/CommandElement"
+      }
+    }
+  },
+  "definitions": {
+    "CtElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string", "description": "Table alias name" },
+        "Source": { "type": "string", "description": "Database object name (table/view/SP)" },
+        "Type": { "type": "string", "enum": ["Table", "View", "StoredProcedure"] },
+        "Columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": { "type": "string" },
+              "DbType": { "type": "string" },
+              "IsPK": { "type": "boolean" },
+              "IsIdentity": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "required": ["Name", "Source", "Type"]
+    },
+    "SourceElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "Text": { "type": "string", "description": "SQL query text" },
+        "Type": { "type": "string" }
+      }
+    },
+    "JoinElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "SourceTable": { "type": "string" },
+        "TargetTable": { "type": "string" },
+        "SourceColumn": { "type": "string" },
+        "TargetColumn": { "type": "string" },
+        "JoinType": { "type": "string", "enum": ["LEFT", "INNER"] },
+        "Columns": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "ChildElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "MasterTable": { "type": "string" },
+        "DetailTable": { "type": "string" },
+        "MasterColumn": { "type": "string" },
+        "DetailColumn": { "type": "string" }
+      }
+    },
+    "EvaluatorElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "BravoCommandKey": { "type": "string" },
+        "Action": { "type": "string" },
+        "Parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": { "type": "string" },
+              "Source": { "type": "string" },
+              "Value": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "ValidatorElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "Field": { "type": "string" },
+        "Rule": { "type": "string" },
+        "Message": { "type": "object", "description": "Multi-language error message" }
+      }
+    },
+    "TempColumnElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "Expression": { "type": "string" },
+        "DataType": { "type": "string" }
+      }
+    },
+    "CommandElement": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "Type": { "type": "string", "enum": ["INSERT", "UPDATE", "DELETE"] },
+        "Text": { "type": "string", "description": "SQL command text" },
+        "Parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Name": { "type": "string" },
+              "DbType": { "type": "string" },
+              "SourceColumn": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

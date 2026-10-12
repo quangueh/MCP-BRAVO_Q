@@ -1,0 +1,1 @@
+const fs=require("fs");const html=fs.readFileSync("_ui_src.html","utf8");fs.writeFileSync("public/layout-generator.html",html);console.log("Done");

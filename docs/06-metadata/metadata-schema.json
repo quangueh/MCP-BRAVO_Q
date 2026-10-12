@@ -1,0 +1,545 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Layout Metadata Schema",
+  "description": "Complete JSON Schema for Bravo Layout Generator layout metadata",
+  "type": "object",
+  "required": [
+    "layoutName",
+    "layoutType",
+    "sourceTable",
+    "columns"
+  ],
+  "properties": {
+    "layoutName": {
+      "type": "string",
+      "description": "Unique identifier for the layout",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "layoutType": {
+      "type": "string",
+      "enum": [
+        "Explorer",
+        "Editor",
+        "Report",
+        "Dashboard",
+        "Approval"
+      ]
+    },
+    "sourceTable": {
+      "type": "string",
+      "description": "Primary database table",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$"
+    },
+    "dataSource": {
+      "type": "object",
+      "required": [
+        "tableName"
+      ],
+      "properties": {
+        "spName": {
+          "type": "string"
+        },
+        "viewType": {
+          "type": "string",
+          "enum": [
+            "Table",
+            "View",
+            "StoredProcedure"
+          ],
+          "default": "Table"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "viewName": {
+          "type": "string"
+        },
+        "filterExpression": {
+          "type": "string"
+        }
+      }
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/columnDef"
+      }
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/controlDef"
+      }
+    },
+    "toolbar": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "action"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "Add",
+              "Edit",
+              "Delete",
+              "Refresh",
+              "Export",
+              "Print",
+              "Custom"
+            ]
+          },
+          "text": {
+            "type": "object",
+            "properties": {
+              "vi": {
+                "type": "string"
+              },
+              "en": {
+                "type": "string"
+              }
+            }
+          },
+          "icon": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "position": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "dataType"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string"
+          },
+          "defaultValue": {},
+          "controlType": {
+            "type": "string",
+            "enum": [
+              "TextBox",
+              "ComboBox",
+              "DateEdit",
+              "LookupEdit",
+              "CheckBox",
+              "SpinEdit"
+            ],
+            "default": "TextBox"
+          },
+          "label": {
+            "type": "object",
+            "properties": {
+              "vi": {
+                "type": "string"
+              },
+              "en": {
+                "type": "string"
+              }
+            }
+          },
+          "required": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "styles": {
+      "type": "object",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "enum": [
+            "Office2016Colorful",
+            "Office2016Dark",
+            "Office2019Colorful",
+            "Default"
+          ]
+        },
+        "fontSize": {
+          "type": "integer",
+          "default": 9
+        },
+        "fontFamily": {
+          "type": "string",
+          "default": "Tahoma"
+        },
+        "headerStyle": {
+          "$ref": "#/definitions/styleDef"
+        },
+        "rowStyle": {
+          "$ref": "#/definitions/styleDef"
+        },
+        "alternatingRowStyle": {
+          "$ref": "#/definitions/styleDef"
+        },
+        "groupRowStyle": {
+          "$ref": "#/definitions/styleDef"
+        },
+        "sumRowStyle": {
+          "$ref": "#/definitions/styleDef"
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/relationDef"
+      }
+    },
+    "seedData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "default": "1.0.0"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "author": {
+          "type": "string"
+        },
+        "sourceFile": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "columnDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "INT",
+            "BIGINT",
+            "DECIMAL",
+            "VARCHAR",
+            "NVARCHAR",
+            "DATE",
+            "DATETIME",
+            "BIT",
+            "TEXT",
+            "UNIQUEIDENTIFIER"
+          ]
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 2000
+        },
+        "format": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "boolean",
+          "default": true
+        },
+        "isPk": {
+          "type": "boolean",
+          "default": false
+        },
+        "isFk": {
+          "type": "boolean",
+          "default": false
+        },
+        "fkTarget": {
+          "type": "string"
+        },
+        "fkTargetColumn": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean",
+          "default": true
+        },
+        "defaultValue": {},
+        "isIdentity": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxLength": {
+          "type": "integer"
+        },
+        "precision": {
+          "type": "integer"
+        },
+        "scale": {
+          "type": "integer"
+        },
+        "headerText": {
+          "type": "object",
+          "properties": {
+            "vi": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          }
+        },
+        "textAlign": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Center",
+            "Right"
+          ],
+          "default": "Left"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "groupIndex": {
+          "type": "integer"
+        },
+        "isSumColumn": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "controlDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "TextBox",
+            "MemoEdit",
+            "ComboBox",
+            "LookUpEdit",
+            "DateEdit",
+            "SpinEdit",
+            "CheckBox",
+            "ButtonEdit",
+            "PictureEdit",
+            "RichEdit"
+          ]
+        },
+        "dataMember": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "style": {
+          "$ref": "#/definitions/styleDef"
+        },
+        "label": {
+          "type": "object",
+          "properties": {
+            "vi": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "lookupSource": {
+          "type": "object",
+          "properties": {
+            "table": {
+              "type": "string"
+            },
+            "valueMember": {
+              "type": "string"
+            },
+            "displayMember": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "string"
+            }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "regex": {
+              "type": "string"
+            },
+            "errorMessage": {
+              "type": "string"
+            }
+          }
+        },
+        "layout": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "integer"
+            },
+            "col": {
+              "type": "integer"
+            },
+            "rowSpan": {
+              "type": "integer",
+              "default": 1
+            },
+            "colSpan": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        }
+      }
+    },
+    "relationDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "targetTable"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "OneToMany",
+            "ManyToOne",
+            "ManyToMany",
+            "SelfRef",
+            "DocumentChain"
+          ]
+        },
+        "sourceColumn": {
+          "type": "string"
+        },
+        "targetTable": {
+          "type": "string"
+        },
+        "targetColumn": {
+          "type": "string",
+          "default": "Id"
+        },
+        "onDelete": {
+          "type": "string",
+          "enum": [
+            "CASCADE",
+            "RESTRICT",
+            "SET_NULL"
+          ],
+          "default": "RESTRICT"
+        },
+        "displayName": {
+          "type": "object",
+          "properties": {
+            "vi": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "styleDef": {
+      "type": "object",
+      "properties": {
+        "backgroundColor": {
+          "type": "string"
+        },
+        "foregroundColor": {
+          "type": "string"
+        },
+        "fontBold": {
+          "type": "boolean"
+        },
+        "fontItalic": {
+          "type": "boolean"
+        },
+        "fontSize": {
+          "type": "integer"
+        },
+        "borderStyle": {
+          "type": "string"
+        },
+        "alignment": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

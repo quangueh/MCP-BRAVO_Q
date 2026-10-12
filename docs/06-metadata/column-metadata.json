@@ -1,0 +1,525 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Column Metadata Schema",
+  "description": "Column metadata schema with SQL type mappings and generation hints",
+  "type": "object",
+  "required": [
+    "name",
+    "dataType",
+    "nullable"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Column name following PascalCase convention",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "dataType": {
+      "type": "string",
+      "description": "SQL Server data type"
+    },
+    "maxLength": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Max length for string types",
+      "minimum": 1,
+      "maximum": 4000
+    },
+    "precision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Precision for DECIMAL/NUMERIC",
+      "minimum": 1,
+      "maximum": 38
+    },
+    "scale": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Scale for DECIMAL/NUMERIC",
+      "minimum": 0,
+      "maximum": 38
+    },
+    "nullable": {
+      "type": "boolean",
+      "description": "Whether column allows NULL",
+      "default": true
+    },
+    "isIdentity": {
+      "type": "boolean",
+      "description": "Auto-increment identity",
+      "default": false
+    },
+    "isPk": {
+      "type": "boolean",
+      "description": "Part of primary key",
+      "default": false
+    },
+    "isFk": {
+      "type": "boolean",
+      "description": "Foreign key column",
+      "default": false
+    },
+    "fkTarget": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "FK target table",
+      "default": null
+    },
+    "fkTargetColumn": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "FK target column",
+      "default": "Id"
+    },
+    "defaultValue": {
+      "description": "Default value expression"
+    },
+    "isComputed": {
+      "type": "boolean",
+      "description": "Computed column",
+      "default": false
+    },
+    "computedExpression": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Computed expression"
+    },
+    "description": {
+      "type": "string",
+      "description": "Column description"
+    },
+    "generationHints": {
+      "type": "object",
+      "description": "Hints for UI and code generation",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "description": "Display width in pixels",
+          "minimum": 20,
+          "maximum": 2000
+        },
+        "format": {
+          "type": "string",
+          "description": "Display format (e.g., N2, yyyy-MM-dd)"
+        },
+        "textAlign": {
+          "type": "string",
+          "enum": [
+            "Left",
+            "Center",
+            "Right"
+          ]
+        },
+        "visible": {
+          "type": "boolean",
+          "default": true
+        },
+        "headerText": {
+          "type": "object",
+          "properties": {
+            "vi": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          }
+        },
+        "controlType": {
+          "type": "string",
+          "enum": [
+            "TextBox",
+            "MemoEdit",
+            "ComboBox",
+            "LookUpEdit",
+            "DateEdit",
+            "SpinEdit",
+            "CheckBox",
+            "ButtonEdit",
+            "PictureEdit",
+            "CalcEdit",
+            "TimeEdit",
+            "ColorEdit"
+          ]
+        },
+        "lookupSource": {
+          "type": "object",
+          "properties": {
+            "table": {
+              "type": "string"
+            },
+            "valueMember": {
+              "type": "string",
+              "default": "Id"
+            },
+            "displayMember": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "string"
+            },
+            "orderBy": {
+              "type": "string"
+            }
+          }
+        },
+        "isSumColumn": {
+          "type": "boolean",
+          "default": false
+        },
+        "isGroupColumn": {
+          "type": "boolean",
+          "default": false
+        },
+        "sortOrder": {
+          "type": "integer"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "toolTip": {
+          "type": "object",
+          "properties": {
+            "vi": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "sqlTypeMapping": {
+      "type": "object",
+      "description": "SQL Server type mapping reference",
+      "properties": {
+        "INT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "INT"
+            },
+            "csharpType": {
+              "const": "int"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 80
+            },
+            "defaultFormat": {
+              "const": "#,##0"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "BIGINT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "BIGINT"
+            },
+            "csharpType": {
+              "const": "long"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 100
+            },
+            "defaultFormat": {
+              "const": "#,##0"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "DECIMAL": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "DECIMAL(18,2)"
+            },
+            "csharpType": {
+              "const": "decimal"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 120
+            },
+            "defaultFormat": {
+              "const": "N2"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "VARCHAR": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "VARCHAR(n)"
+            },
+            "csharpType": {
+              "const": "string"
+            },
+            "defaultValue": {
+              "const": "('')"
+            },
+            "defaultWidth": {
+              "const": 150
+            },
+            "defaultAlign": {
+              "const": "Left"
+            }
+          }
+        },
+        "NVARCHAR": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "NVARCHAR(n)"
+            },
+            "csharpType": {
+              "const": "string"
+            },
+            "defaultValue": {
+              "const": "(N'')"
+            },
+            "defaultWidth": {
+              "const": 200
+            },
+            "defaultAlign": {
+              "const": "Left"
+            }
+          }
+        },
+        "DATE": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "DATE"
+            },
+            "csharpType": {
+              "const": "DateTime"
+            },
+            "defaultValue": {
+              "const": "NULL"
+            },
+            "defaultWidth": {
+              "const": 100
+            },
+            "defaultFormat": {
+              "const": "yyyy-MM-dd"
+            },
+            "defaultAlign": {
+              "const": "Center"
+            }
+          }
+        },
+        "DATETIME": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "DATETIME2(7)"
+            },
+            "csharpType": {
+              "const": "DateTime"
+            },
+            "defaultValue": {
+              "const": "NULL"
+            },
+            "defaultWidth": {
+              "const": 160
+            },
+            "defaultFormat": {
+              "const": "yyyy-MM-dd HH:mm:ss"
+            },
+            "defaultAlign": {
+              "const": "Center"
+            }
+          }
+        },
+        "BIT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "BIT"
+            },
+            "csharpType": {
+              "const": "bool"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 60
+            },
+            "defaultAlign": {
+              "const": "Center"
+            }
+          }
+        },
+        "TEXT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "NVARCHAR(MAX)"
+            },
+            "csharpType": {
+              "const": "string"
+            },
+            "defaultValue": {
+              "const": "NULL"
+            },
+            "defaultWidth": {
+              "const": 300
+            },
+            "defaultAlign": {
+              "const": "Left"
+            }
+          }
+        },
+        "UNIQUEIDENTIFIER": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "UNIQUEIDENTIFIER"
+            },
+            "csharpType": {
+              "const": "Guid"
+            },
+            "defaultValue": {
+              "const": "NEWID()"
+            },
+            "defaultWidth": {
+              "const": 280
+            },
+            "defaultFormat": {
+              "const": "D"
+            },
+            "defaultAlign": {
+              "const": "Left"
+            }
+          }
+        },
+        "MONEY": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "MONEY"
+            },
+            "csharpType": {
+              "const": "decimal"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 140
+            },
+            "defaultFormat": {
+              "const": "#,##0.00"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "TINYINT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "TINYINT"
+            },
+            "csharpType": {
+              "const": "byte"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 60
+            },
+            "defaultFormat": {
+              "const": "#,##0"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "SMALLINT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "SMALLINT"
+            },
+            "csharpType": {
+              "const": "short"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 70
+            },
+            "defaultFormat": {
+              "const": "#,##0"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        },
+        "FLOAT": {
+          "type": "object",
+          "properties": {
+            "sqlType": {
+              "const": "FLOAT"
+            },
+            "csharpType": {
+              "const": "double"
+            },
+            "defaultValue": {
+              "const": "((0))"
+            },
+            "defaultWidth": {
+              "const": 120
+            },
+            "defaultFormat": {
+              "const": "N4"
+            },
+            "defaultAlign": {
+              "const": "Right"
+            }
+          }
+        }
+      }
+    }
+  }
+}

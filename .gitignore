@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Local env and private MCP config
+.env
+.mcp.json
+
+# Extracted customer/database knowledge. Keep this local only.
+knowledge/**/*.json
+knowledge/**/*.xml
+knowledge/**/*.sql
+knowledge/**/*.xlsx
+knowledge/**/*.xls
+knowledge/**/*.doc
+knowledge/**/*.docx
+knowledge/**/*.pdf
+knowledge/**/*.png
+knowledge/**/*.jpg
+knowledge/**/*.jpeg
+knowledge/**/*.msg
+knowledge/**/*.html
+
+# Generated/imported customer work
+output/
+Import/
+
+# OS/editor noise
+Thumbs.db
+Desktop.ini
+*.log

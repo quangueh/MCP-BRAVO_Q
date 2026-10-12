@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Table Metadata Schema",
+  "description": "Table metadata schema for database table generation",
+  "type": "object",
+  "required": ["tableName", "database", "prefix", "displayName", "columns", "primaryKey"],
+  "properties": {
+    "tableName": {
+      "type": "string",
+      "description": "Table name following Bravo naming convention (e.g., B20Customer, B10BudgetCons)",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "database": {
+      "type": "string",
+      "description": "Target database",
+      "enum": ["Bravo_Config", "Bravo_Data"]
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Module prefix indicating business domain",
+      "enum": ["B00", "B10", "B20", "B30"]
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable table display name"
+    },
+    "displayNameMultiLang": {
+      "type": "object",
+      "properties": {
+        "vi": { "type": "string" },
+        "en": { "type": "string" }
+      }
+    },
+    "columns": {
+      "type": "array",
+      "description": "Column definitions",
+      "items": {
+        "$ref": "column-metadata.json"
+      }
+    },
+    "primaryKey": {
+      "type": "object",
+      "description": "Primary key configuration",
+      "required": ["columns", "type"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "PK column name(s)",
+          "minItems": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["INT_IDENTITY", "BIGINT_IDENTITY", "GUID", "COMPOSITE"],
+          "description": "Primary key generation strategy"
+        },
+        "isClustered": {
+          "type": "boolean",
+          "default": true
+        },
+        "constraintName": {
+          "type": "string",
+          "description": "Explicit PK constraint name (default: PK_{TableName})"
+        }
+      }
+    },
+    "foreignKeys": {
+      "type": "array",
+      "description": "Foreign key definitions",
+      "items": {
+        "type": "object",
+        "required": ["column", "targetTable", "targetColumn"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "FK constraint name (default: FK_{Source}_{Target})"
+          },
+          "column": {
+            "type": "string",
+            "description": "Source column name"
+          },
+          "targetTable": {
+            "type": "string",
+            "description": "Referenced table"
+          },
+          "targetColumn": {
+            "type": "string",
+            "description": "Referenced column",
+            "default": "Id"
+          },
+          "onDelete": {
+            "type": "string",
+            "enum": ["CASCADE", "RESTRICT", "SET_NULL"],
+            "default": "RESTRICT"
+          },
+          "onUpdate": {
+            "type": "string",
+            "enum": ["CASCADE", "RESTRICT"],
+            "default": "CASCADE"
+          }
+        }
+      }
+    },
+    "indexes": {
+      "type": "array",
+      "description": "Index definitions",
+      "items": {
+        "type": "object",
+        "required": ["name", "columns"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Index name (e.g., IX_{Table}_{Column})"
+          },
+          "columns": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "includeColumns": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "INCLUDE columns for covering index"
+          },
+          "isUnique": {
+            "type": "boolean",
+            "default": false
+          },
+          "isClustered": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "auditColumns": {
+      "type": "object",
+      "description": "Standard audit/tracking columns",
+      "properties": {
+        "includeCreatedBy": { "type": "boolean", "default": true },
+        "includeCreatedDate": { "type": "boolean", "default": true },
+        "includeModifiedBy": { "type": "boolean", "default": true },
+        "includeModifiedDate": { "type": "boolean", "default": true },
+        "includeIsActive": { "type": "boolean", "default": true },
+        "includeRowVersion": { "type": "boolean", "default": false }
+      },
+      "default": {
+        "includeCreatedBy": true,
+        "includeCreatedDate": true,
+        "includeModifiedBy": true,
+        "includeModifiedDate": true,
+        "includeIsActive": true
+      }
+    },
+    "softDelete": {
+      "type": "boolean",
+      "default": true,
+      "description": "Use IsActive soft delete instead of physical DELETE"
+    },
+    "estimatedRows": {
+      "type": "number",
+      "description": "Estimated row count for performance tuning",
+      "minimum": 0
+    },
+    "schema": {
+      "type": "string",
+      "default": "dbo",
+      "description": "Database schema"
+    },
+    "description": {
+      "type": "string",
+      "description": "Table purpose description"
+    },
+    "generationHints": {
+      "type": "object",
+      "description": "Hints for code generation",
+      "properties": {
+        "defaultWidth": {
+          "type": "integer",
+          "description": "Default column display width in pixels",
+          "default": 100
+        },
+        "defaultFormat": {
+          "type": "string",
+          "description": "Default format for numeric columns",
+          "default": "N2"
+        },
+        "defaultStyle": {
+          "type": "string",
+          "description": "Default style name",
+          "default": "DevExpress_Normal"
+        },
+        "gridHeight": {
+          "type": "integer",
+          "description": "Grid height in pixels",
+          "default": 400
+        },
+        "allowAdd": {
+          "type": "boolean",
+          "default": true
+        },
+        "allowEdit": {
+          "type": "boolean",
+          "default": true
+        },
+        "allowDelete": {
+          "type": "boolean",
+          "default": true
+        },
+        "pageSize": {
+          "type": "integer",
+          "description": "Default page size for pagination",
+          "default": 50
+        }
+      }
+    }
+  }
+}

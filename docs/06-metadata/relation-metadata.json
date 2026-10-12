@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Relation Metadata Schema",
+  "description": "Relation metadata schema for table relationship definitions",
+  "type": "object",
+  "required": ["name", "type", "sourceTable", "sourceColumn", "targetTable", "targetColumn"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Relation identifier (e.g., FK_B20Order_B20Customer)",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "maxLength": 128
+    },
+    "type": {
+      "type": "string",
+      "description": "Relationship type",
+      "enum": ["OneToMany", "ManyToOne", "ManyToMany", "SelfRef", "DocumentChain"]
+    },
+    "sourceTable": {
+      "type": "string",
+      "description": "Source (child/dependent) table name",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$"
+    },
+    "sourceColumn": {
+      "type": "string",
+      "description": "Foreign key column in source table",
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "targetTable": {
+      "type": "string",
+      "description": "Target (parent/referenced) table name",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$"
+    },
+    "targetColumn": {
+      "type": "string",
+      "description": "Referenced column in target table",
+      "default": "Id"
+    },
+    "cardinality": {
+      "type": "string",
+      "description": "Cardinality description (e.g., 1:N, N:1, N:M)",
+      "pattern": "^[0-9*]:[0-9*]$"
+    },
+    "onDelete": {
+      "type": "string",
+      "description": "Action when parent record is deleted",
+      "enum": ["CASCADE", "RESTRICT", "SET_NULL"],
+      "default": "RESTRICT"
+    },
+    "onUpdate": {
+      "type": "string",
+      "description": "Action when parent record key is updated",
+      "enum": ["CASCADE", "RESTRICT"],
+      "default": "CASCADE"
+    },
+    "isOptional": {
+      "type": "boolean",
+      "description": "Whether the FK column allows NULL (optional relationship)",
+      "default": false
+    },
+    "displayName": {
+      "type": "object",
+      "description": "Human-readable relation name (multi-language)",
+      "properties": {
+        "vi": {
+          "type": "string",
+          "description": "Vietnamese display name"
+        },
+        "en": {
+          "type": "string",
+          "description": "English display name"
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Detection confidence score (0-100)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "detectionMethod": {
+      "type": "string",
+      "description": "How this relation was detected",
+      "enum": ["ForeignKey", "NameInference", "Convention", "Manual"]
+    },
+    "isEnforced": {
+      "type": "boolean",
+      "description": "Whether to generate FK constraint in database",
+      "default": true
+    },
+    "junctionTable": {
+      "type": "string",
+      "description": "For ManyToMany: name of junction/bridge table"
+    },
+    "junctionSourceColumn": {
+      "type": "string",
+      "description": "Column in junction table referencing source"
+    },
+    "junctionTargetColumn": {
+      "type": "string",
+      "description": "Column in junction table referencing target"
+    },
+    "cascadeFields": {
+      "type": "array",
+      "description": "Fields to propagate from parent to child on CASCADE",
+      "items": { "type": "string" }
+    },
+    "navigationProperty": {
+      "type": "object",
+      "description": "Navigation property configuration for ORM generation",
+      "properties": {
+        "sourceNavProp": {
+          "type": "string",
+          "description": "Navigation property name on source entity (e.g., Customer)"
+        },
+        "targetNavProp": {
+          "type": "string",
+          "description": "Navigation property name on target entity (e.g., Orders)"
+        },
+        "isCollection": {
+          "type": "boolean",
+          "description": "Whether target navigation is a collection"
+        }
+      }
+    }
+  }
+}

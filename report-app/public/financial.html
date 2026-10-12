@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Thực Hiện Ngân Sách Công Trường</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #e8eaf6; font-size: 13px; }
+
+    .header {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+      color: white; padding: 10px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .header h1 { font-size: 16px; font-weight: 600; }
+    .header .back { color: white; text-decoration: none; font-size: 12px; opacity: 0.8; }
+
+    .toolbar {
+      background: linear-gradient(to bottom, #f5f5f5, #e0e0e0);
+      border-bottom: 1px solid #bbb; padding: 4px 12px;
+      display: flex; gap: 4px; align-items: center;
+    }
+    .toolbar-btn {
+      padding: 4px 10px; border: 1px solid #999; border-radius: 3px;
+      background: linear-gradient(to bottom, #fff, #e8e8e8);
+      cursor: pointer; font-size: 11px; color: #333;
+    }
+    .toolbar-btn:hover { background: linear-gradient(to bottom, #e8eaf6, #c5cae9); border-color: #7986cb; }
+    .toolbar-sep { width: 1px; height: 20px; background: #bbb; margin: 0 4px; }
+
+    .params-panel {
+      background: white; margin: 8px 12px; padding: 12px 16px;
+      border: 1px solid #bbb; border-radius: 4px;
+    }
+    .params-title { font-size: 12px; font-weight: 600; color: #1a237e; margin-bottom: 10px; }
+    .params-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: end; }
+    .param-group { display: flex; flex-direction: column; gap: 4px; }
+    .param-group label { font-size: 11px; color: #666; }
+    .param-group input, .param-group select {
+      padding: 5px 8px; border: 1px solid #999; border-radius: 2px; font-size: 12px;
+    }
+    .btn-action {
+      padding: 5px 14px; border: 1px solid #1a237e; border-radius: 3px;
+      background: linear-gradient(to bottom, #3949ab, #1a237e);
+      color: white; cursor: pointer; font-size: 12px;
+    }
+    .btn-export {
+      padding: 5px 14px; border: 1px solid #2e7d32; border-radius: 3px;
+      background: linear-gradient(to bottom, #43a047, #2e7d32);
+      color: white; cursor: pointer; font-size: 12px;
+    }
+
+    .report-container {
+      background: white; margin: 0 12px 12px; border: 1px solid #bbb; border-radius: 4px;
+    }
+    .report-title {
+      text-align: center; padding: 16px 20px; border-bottom: 2px solid #000;
+    }
+    .report-title h1 { font-size: 15px; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+    .report-title .project { font-size: 13px; font-weight: bold; }
+    .report-title .date { font-size: 12px; font-style: italic; }
+
+    .table-scroll { overflow-x: auto; }
+    table.report { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1400px; }
+    table.report th {
+      background: linear-gradient(to bottom, #1a237e, #0d47a1);
+      color: white; padding: 6px 8px; text-align: center;
+      font-weight: 500; border: 1px solid #0d47a1; font-size: 11px;
+    }
+    table.report td { padding: 5px 8px; border: 1px solid #ddd; }
+    table.report tr:hover { background: #e8eaf6 !important; }
+
+    tr.title-row { background: #e3f2fd !important; font-weight: 700; color: #1565c0; }
+    tr.group-row { background: #f5f5f5; font-weight: 600; }
+    tr.sub-row { background: white; }
+    tr.detail-row { background: #fafafa; }
+    tr.status-red { color: #c62828 !important; }
+    tr.status-blue { color: #1565c0 !important; }
+    tr.status-steel { color: #455a64 !important; }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .indent-1 { padding-left: 20px !important; }
+    .indent-2 { padding-left: 40px !important; }
+    .indent-3 { padding-left: 60px !important; }
+    .indent-4 { padding-left: 80px !important; }
+
+    .toggle-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border: 1px solid #666; border-radius: 3px;
+      cursor: pointer; font-size: 12px; font-weight: bold;
+      background: linear-gradient(to bottom, #fff, #e0e0e0);
+      color: #333; margin-right: 6px; user-select: none;
+      transition: all 0.15s ease; vertical-align: middle;
+    }
+    .toggle-btn:hover { background: linear-gradient(to bottom, #e8eaf6, #c5cae9); border-color: #3949ab; }
+    .toggle-btn.expanded { background: linear-gradient(to bottom, #c5cae9, #9fa8da); border-color: #3949ab; }
+
+    .hidden { display: none; }
+
+    .progress-bar {
+      width: 100%; height: 16px; background: #e0e0e0;
+      border-radius: 3px; overflow: hidden; position: relative;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(to right, #43a047, #66bb6a);
+      transition: width 0.3s;
+    }
+    .progress-text {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 600; color: #333;
+    }
+
+    .summary-legend { padding: 12px 16px; border-top: 1px solid #ddd; font-size: 11px; background: #fafafa; }
+    .summary-legend .note { font-weight: 600; margin-bottom: 6px; }
+    .summary-legend p { margin-bottom: 3px; }
+
+    .footer-sign { display: grid; grid-template-columns: repeat(3, 1fr); padding: 20px; border-top: 1px solid #ddd; }
+    .footer-sign div { text-align: center; }
+    .footer-sign .title { font-weight: 600; margin-bottom: 50px; font-size: 12px; }
+    .footer-sign .sign { font-style: italic; font-size: 11px; color: #666; }
+
+    .loading { text-align: center; padding: 40px; color: #666; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+
+    /* Print styles */
+    @media print {
+      body { background: white; font-size: 10pt; }
+      .header, .toolbar, .params-panel { display: none !important; }
+      .report-container { margin: 0; border: none; box-shadow: none; }
+      .report-title { padding: 10px 0; }
+      .table-scroll { overflow: visible; }
+      table.report { min-width: 100%; font-size: 9pt; }
+      table.report th { background: #333 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .toggle-btn { display: none !important; }
+      .progress-bar { border: 1px solid #999; }
+      .progress-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr.title-row { background: #e3f2fd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr.group-row { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .summary-legend { page-break-inside: avoid; }
+      .footer-sign { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>BÁO CÁO TÓM TẮT THỰC HIỆN NGÂN SÁCH CÔNG TRƯỜNG</h1>
+    <a href="/" class="back">← Quay lại Dashboard</a>
+  </div>
+
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="expandAll()">📂 Mở rộng</button>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ In</button>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn" onclick="expandAll()">➕ Mở rộng tất cả</button>
+    <button class="toolbar-btn" onclick="collapseAll()">➖ Thu gọn tất cả</button>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn" onclick="loadReport()">🔄 Tải lại</button>
+  </div>
+
+  <div class="params-panel">
+    <div class="params-title">THÔNG SỐ BÁO CÁO</div>
+    <div class="params-grid">
+      <div class="param-group">
+        <label>Đến ngày</label>
+        <input type="date" id="docDate" value="2025-12-31">
+      </div>
+      <div class="param-group">
+        <label>Công trình</label>
+        <select id="productId"><option value="">-- Chọn công trình --</option></select>
+      </div>
+      <div class="param-group">
+        <label>Loại tiền</label>
+        <select id="currency" disabled><option value="VND">VND - Việt Nam Đồng</option></select>
+      </div>
+      <div class="param-group" style="display:flex;gap:8px;align-items:end;">
+        <button class="btn-action" onclick="loadReport()">Xem báo cáo</button>
+        <button class="btn-export" onclick="exportExcel()">Xuất Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-container" id="report-container">
+    <div class="empty">Chọn công trình và nhấn "Xem báo cáo"</div>
+  </div>
+
+  <script>
+    const API = '';
+    let allData = [];
+
+    async function loadProjects() {
+      try {
+        const res = await fetch(API + '/api/budget-summary');
+        const data = await res.json();
+        const select = document.getElementById('productId');
+        if (data) data.forEach(p => {
+          if (p.ProductId) select.innerHTML += `<option value="${p.ProductId}">${p.ProductName}</option>`;
+        });
+      } catch (err) { console.error('Load projects error:', err); }
+    }
+
+    function fmt(val) {
+      if (val === null || val === undefined || val === '') return '';
+      const num = parseFloat(val);
+      if (isNaN(num)) return val;
+      return num.toLocaleString('vi-VN');
+    }
+
+    function getLevel(groupOrder) {
+      if (!groupOrder) return 0;
+      return groupOrder.split(',').length;
+    }
+
+    function getRowClass(row, level) {
+      if (row.IsTitle === 1) return 'title-row';
+      if (level === 1) return 'group-row';
+      if (level === 2) return 'sub-row';
+      return 'detail-row';
+    }
+
+    function getStatusClass(row) {
+      if (row.IsTitle === 1) return '';
+      if (row._Status === '2') {
+        if (row.IsQTApproved === 1) return 'status-blue';
+        if (row.IsQTApproving === 1) return 'status-steel';
+      }
+      const budget = parseFloat(row.BudgetAmount || 0);
+      const paid = parseFloat(row.PaidAmount || 0);
+      if (budget > 0 && paid > budget + 10000) return 'status-red';
+      return '';
+    }
+
+    // FIXED: Ctrl+click logic - use correct level comparison
+    function toggleGroup(groupOrder, event) {
+      const btn = document.querySelector(`[data-group="${groupOrder}"]`);
+      if (!btn) return;
+
+      const isCtrl = event && event.ctrlKey;
+      const isExpanded = btn.textContent === '−';
+      const level = getLevel(groupOrder);
+
+      if (isCtrl) {
+        // Ctrl+click: toggle all groups at same level
+        document.querySelectorAll('.toggle-btn').forEach(b => {
+          const bGroup = b.getAttribute('data-group');
+          const bLevel = getLevel(bGroup);
+          if (bLevel === level) {
+            b.textContent = isExpanded ? '+' : '−';
+            b.classList.toggle('expanded', !isExpanded);
+          }
+        });
+        // FIXED: Hide/show all rows whose parent is at same level
+        document.querySelectorAll('[data-parent]').forEach(row => {
+          const parentGroup = row.getAttribute('data-parent');
+          const parentLevel = getLevel(parentGroup);
+          if (parentLevel === level) {
+            if (isExpanded) row.classList.add('hidden');
+            else row.classList.remove('hidden');
+          }
+        });
+      } else {
+        // Normal click: toggle this group only
+        btn.textContent = isExpanded ? '+' : '−';
+        btn.classList.toggle('expanded', !isExpanded);
+
+        document.querySelectorAll(`[data-parent="${groupOrder}"]`).forEach(row => {
+          if (isExpanded) {
+            row.classList.add('hidden');
+            row.querySelectorAll('.toggle-btn').forEach(b => {
+              b.textContent = '+';
+              b.classList.remove('expanded');
+            });
+          } else {
+            row.classList.remove('hidden');
+          }
+        });
+      }
+    }
+
+    function expandAll() {
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.textContent = '−';
+        btn.classList.add('expanded');
+      });
+      document.querySelectorAll('[data-parent]').forEach(row => row.classList.remove('hidden'));
+    }
+
+    function collapseAll() {
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.textContent = '+';
+        btn.classList.remove('expanded');
+      });
+      document.querySelectorAll('[data-parent]').forEach(row => row.classList.add('hidden'));
+    }
+
+    async function loadReport() {
+      const date = document.getElementById('docDate').value;
+      const productId = document.getElementById('productId').value;
+      const container = document.getElementById('report-container');
+
+      if (!productId) { container.innerHTML = '<div class="empty">Vui lòng chọn công trình</div>'; return; }
+      container.innerHTML = '<div class="loading">Đang tải dữ liệu...</div>';
+
+      try {
+        const res = await fetch(API + `/api/budget-report?date=${date}&productId=${productId}`);
+        allData = await res.json();
+        if (allData.error) throw new Error(allData.error);
+
+        const select = document.getElementById('productId');
+        const projectName = select.options[select.selectedIndex]?.text || '';
+
+        let totalBudget = 0, totalPaid = 0, totalAccounting = 0, totalPayment = 0;
+        allData.forEach(row => {
+          if (row.IsTitle !== 1) {
+            totalBudget += parseFloat(row.BudgetAmount || 0);
+            totalPaid += parseFloat(row.PaidAmount || 0);
+            totalAccounting += parseFloat(row.InvoiceAccounting || 0);
+            totalPayment += parseFloat(row.AccountingPayment || 0);
+          }
+        });
+
+        let html = `
+          <div class="report-title">
+            <h1>TÓM TẮT BÁO CÁO THỰC HIỆN NGÂN SÁCH CHỈ CÓ</h1>
+            <div class="project">DỰ ÁN : ${projectName}</div>
+            <div class="date">Đến ngày : ${new Date(date).toLocaleDateString('vi-VN')}</div>
+          </div>
+          <div class="table-scroll">
+          <table class="report" id="report-table">
+            <thead>
+              <tr>
+                <th style="width:64px">MÃ VIẾT TẮT</th>
+                <th style="width:77px">MÃ ĐỐI TÁC</th>
+                <th style="width:220px">TÊN ĐỐI TÁC</th>
+                <th style="width:180px">MÔ TẢ CÔNG TÁC</th>
+                <th style="width:120px">SỐ HỢP ĐỒNG</th>
+                <th style="width:160px">NỘI DUNG HỢP ĐỒNG</th>
+                <th style="width:100px">DỰ TRÙ</th>
+                <th style="width:100px">THỰC HIỆN</th>
+                <th style="width:100px">KẾ TOÁN</th>
+                <th style="width:90px">CHÊNH LỆCH</th>
+                <th style="width:80px">% THỰC HIỆN</th>
+                <th style="width:100px">ĐÃ CHI</th>
+                <th>GHI CHÚ</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        if (allData.length === 0) {
+          html += '<tr><td colspan="13" class="empty">Không có dữ liệu</td></tr>';
+        } else {
+          const childMap = {};
+          allData.forEach(row => {
+            const group = row._GroupOrder || '';
+            const parts = group.split(',');
+            if (parts.length > 1) {
+              const parent = parts.slice(0, -1).join(',');
+              if (!childMap[parent]) childMap[parent] = [];
+              childMap[parent].push(group);
+            }
+          });
+
+          allData.forEach(row => {
+            const groupOrder = row._GroupOrder || '';
+            const level = getLevel(groupOrder);
+            const hasChildren = childMap[groupOrder] && childMap[groupOrder].length > 0;
+            const rowClass = getRowClass(row, level);
+            const statusClass = getStatusClass(row);
+            const indent = level > 1 ? `indent-${Math.min(level, 4)}` : '';
+
+            const budget = parseFloat(row.BudgetAmount || 0);
+            const paid = parseFloat(row.PaidAmount || 0);
+            const accounting = parseFloat(row.InvoiceAccounting || 0);
+            const diff = budget - paid;
+            const percent = budget > 0 ? (paid / budget * 100) : 0;
+            const payment = parseFloat(row.AccountingPayment || 0);
+
+            const toggleBtn = hasChildren
+              ? `<span class="toggle-btn expanded" data-group="${groupOrder}" onclick="toggleGroup('${groupOrder}', event)">−</span>`
+              : '';
+            const parentAttr = level > 1 ? `data-parent="${groupOrder.substring(0, groupOrder.lastIndexOf(','))}"` : '';
+
+            html += `
+              <tr class="${rowClass} ${statusClass}" ${parentAttr}>
+                <td class="text-center">${row.ShortName || ''}</td>
+                <td class="text-center">${row.CustomerCode || ''}</td>
+                <td class="${indent}">${toggleBtn}${row.CustomerName || ''}</td>
+                <td class="${indent}">${row.Description || ''}</td>
+                <td>${row.BizDocNo || ''}</td>
+                <td>${row.BizDocDescription || ''}</td>
+                <td class="text-right">${fmt(budget)}</td>
+                <td class="text-right">${fmt(paid)}</td>
+                <td class="text-right">${fmt(accounting)}</td>
+                <td class="text-right">${fmt(diff)}</td>
+                <td class="text-center">
+                  ${budget > 0 ? `
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width:${Math.min(percent, 100)}%"></div>
+                      <div class="progress-text">${percent.toFixed(1)}%</div>
+                    </div>
+                  ` : ''}
+                </td>
+                <td class="text-right">${fmt(payment)}</td>
+                <td>${row.Note || ''}</td>
+              </tr>
+            `;
+          });
+        }
+
+        html += '</tbody></table></div>';
+
+        html += `
+          <div style="padding:10px 16px;background:#e8eaf6;border-top:2px solid #1a237e;font-weight:700;">
+            <span>TỔNG CỘNG:</span>
+            <span style="margin-left:40px">Dự trù: ${fmt(totalBudget)}</span>
+            <span style="margin-left:30px">Thực hiện: ${fmt(totalPaid)}</span>
+            <span style="margin-left:30px">Kế toán: ${fmt(totalAccounting)}</span>
+            <span style="margin-left:30px">Đã chi: ${fmt(totalPayment)}</span>
+          </div>
+        `;
+
+        html += `
+          <div class="summary-legend">
+            <p class="note">* Ghi chú:</p>
+            <p style="color:#333">• Màu đen: chưa có hồ sơ quyết toán, bình thường</p>
+            <p style="color:#1565c0">• Màu xanh dương: đã duyệt xong hồ sơ quyết toán</p>
+            <p style="color:#455a64">• Màu xanh nhạt: đã có hồ sơ quyết toán, chưa duyệt xong</p>
+            <p style="color:#c62828">• Màu đỏ: cảnh báo vượt dự trù</p>
+          </div>
+        `;
+
+        html += `
+          <div class="footer-sign">
+            <div><div class="title">Người lập biểu</div><div class="sign">(Ký, họ tên)</div></div>
+            <div><div class="title">Kế toán trưởng</div><div class="sign">(Ký, họ tên)</div></div>
+            <div><div class="title">Giám đốc</div><div class="sign">(Ký, họ tên, đóng dấu)</div></div>
+          </div>
+        `;
+
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<div style="color:#c62828;padding:20px">Lỗi: ${err.message}</div>`;
+      }
+    }
+
+    // FIXED: Export Excel using SheetJS with proper formatting
+    function exportExcel() {
+      if (allData.length === 0) return alert('Chưa có dữ liệu');
+
+      // Build data array matching UI columns
+      const excelData = [];
+      allData.forEach(row => {
+        const budget = parseFloat(row.BudgetAmount || 0);
+        const paid = parseFloat(row.PaidAmount || 0);
+        const accounting = parseFloat(row.InvoiceAccounting || 0);
+        const diff = budget - paid;
+        const percent = budget > 0 ? (paid / budget * 100) : 0;
+        const payment = parseFloat(row.AccountingPayment || 0);
+
+        excelData.push({
+          'MÃ VIẾT TẮT': row.ShortName || '',
+          'MÃ ĐỐI TÁC': row.CustomerCode || '',
+          'TÊN ĐỐI TÁC': row.CustomerName || '',
+          'MÔ TẢ CÔNG TÁC': row.Description || '',
+          'SỐ HỢP ĐỒNG': row.BizDocNo || '',
+          'NỘI DUNG HỢP ĐỒNG': row.BizDocDescription || '',
+          'DỰ TRÙ': budget,
+          'THỰC HIỆN': paid,
+          'KẾ TOÁN': accounting,
+          'CHÊNH LỆCH': diff,
+          '% THỰC HIỆN': percent.toFixed(1) + '%',
+          'ĐÃ CHI': payment,
+          'GHI CHÚ': row.Note || ''
+        });
+      });
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Set column widths
+      ws['!cols'] = [
+        { wch: 12 },  // MÃ VIẾT TẮT
+        { wch: 15 },  // MÃ ĐỐI TÁC
+        { wch: 30 },  // TÊN ĐỐI TÁC
+        { wch: 35 },  // MÔ TẢ CÔNG TÁC
+        { wch: 20 },  // SỐ HỢP ĐỒNG
+        { wch: 30 },  // NỘI DUNG HỢP ĐỒNG
+        { wch: 18 },  // DỰ TRÙ
+        { wch: 18 },  // THỰC HIỆN
+        { wch: 18 },  // KẾ TOÁN
+        { wch: 15 },  // CHÊNH LỆCH
+        { wch: 12 },  // % THỰC HIỆN
+        { wch: 18 },  // ĐÃ CHI
+        { wch: 25 }   // GHI CHÚ
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Báo Cáo Ngân Sách');
+      XLSX.writeFile(wb, 'BaoCaoNganSach.xlsx');
+    }
+
+    // Keyboard shortcuts: = or + to expand, - to collapse
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '=' || e.key === '+') { e.preventDefault(); expandAll(); }
+      if (e.key === '-') { e.preventDefault(); collapseAll(); }
+    });
+
+    loadProjects();
+  </script>
+</body>
+</html>

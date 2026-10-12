@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Configuration",
+  "type": "object",
+  "properties": {
+    "database": {
+      "type": "object",
+      "properties": {
+        "server": { "type": "string", "default": "localhost" },
+        "port": { "type": "number", "default": 1433 },
+        "user": { "type": "string", "default": "sa" },
+        "password": { "type": "string", "default": "" },
+        "database": { "type": "string", "default": "Bravo_Config" }
+      },
+      "required": ["server", "port", "user", "password", "database"]
+    },
+    "generation": {
+      "type": "object",
+      "properties": {
+        "defaultSchema": { "type": "string", "default": "dbo" },
+        "includeAuditColumns": { "type": "boolean", "default": true },
+        "includeSeedData": { "type": "boolean", "default": false },
+        "defaultLanguage": { "type": "string", "enum": ["vi", "en"], "default": "vi" }
+      }
+    },
+    "templates": {
+      "type": "object",
+      "properties": {
+        "templateDir": { "type": "string", "default": "./templates" },
+        "customTemplates": { "type": "string", "default": "./templates/custom" }
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "properties": {
+        "theme": { "type": "string", "enum": ["dark", "light"], "default": "dark" },
+        "language": { "type": "string", "enum": ["vi", "en"], "default": "vi" },
+        "fontSize": { "type": "number", "minimum": 12, "maximum": 16, "default": 14 },
+        "sidebarCollapsed": { "type": "boolean", "default": false }
+      }
+    },
+    "export": {
+      "type": "object",
+      "properties": {
+        "defaultFormat": { "type": "string", "enum": ["sql", "xml"], "default": "sql" },
+        "outputDir": { "type": "string", "default": "./output" },
+        "autoExport": { "type": "boolean", "default": false }
+      }
+    },
+    "history": {
+      "type": "object",
+      "properties": {
+        "maxEntries": { "type": "number", "default": 100 },
+        "retentionDays": { "type": "number", "default": 90 }
+      }
+    },
+    "advanced": {
+      "type": "object",
+      "properties": {
+        "timeout": { "type": "number", "default": 30000 },
+        "maxConcurrent": { "type": "number", "default": 3 },
+        "logLevel": { "type": "string", "enum": ["DEBUG", "INFO", "WARN", "ERROR"], "default": "INFO" }
+      }
+    }
+  }
+}

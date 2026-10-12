@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BLG Layout Metadata Schema",
+  "description": "Layout configuration metadata for UI generation",
+  "type": "object",
+  "required": [
+    "layoutName",
+    "formName",
+    "layoutType",
+    "panels"
+  ],
+  "properties": {
+    "layoutName": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9_]+$"
+    },
+    "formName": {
+      "type": "string"
+    },
+    "layoutType": {
+      "type": "string",
+      "enum": [
+        "Explorer",
+        "Editor",
+        "Report",
+        "Dashboard",
+        "Approval"
+      ]
+    },
+    "isTemplate": {
+      "type": "number",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "default": 0
+    },
+    "title": {
+      "type": "object",
+      "properties": {
+        "vi": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        }
+      }
+    },
+    "panels": {
+      "type": "array"
+    },
+    "toolbar": {
+      "type": "array"
+    },
+    "contextMenu": {
+      "type": "array"
+    },
+    "explorerConfig": {
+      "type": "object",
+      "properties": {
+        "treeColumn": {
+          "type": "string"
+        },
+        "treeParentColumn": {
+          "type": "string"
+        },
+        "groupColumn": {
+          "type": "string"
+        },
+        "allowAdd": {
+          "type": "boolean",
+          "default": true
+        },
+        "allowEdit": {
+          "type": "boolean",
+          "default": true
+        },
+        "allowDelete": {
+          "type": "boolean",
+          "default": true
+        },
+        "multiSelect": {
+          "type": "boolean",
+          "default": false
+        },
+        "showFilterRow": {
+          "type": "boolean",
+          "default": true
+        },
+        "showGroupPanel": {
+          "type": "boolean",
+          "default": false
+        },
+        "enableColumnChooser": {
+          "type": "boolean",
+          "default": true
+        },
+        "enableSearch": {
+          "type": "boolean",
+          "default": true
+        },
+        "defaultSortColumn": {
+          "type": "string"
+        },
+        "defaultSortOrder": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "sumColumns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "countColumn": {
+          "type": "string"
+        },
+        "masterDetailKey": {
+          "type": "string"
+        },
+        "zTreeColName": {
+          "type": "string"
+        },
+        "zMakingTreeNodeKeyColName": {
+          "type": "string"
+        }
+      }
+    },
+    "editorConfig": {
+      "type": "object",
+      "properties": {
+        "headerFields": {
+          "type": "array"
+        },
+        "detailGrid": {
+          "type": "object"
+        },
+        "tabPages": {
+          "type": "array"
+        },
+        "isPopup": {
+          "type": "boolean",
+          "default": false
+        },
+        "popupWidth": {
+          "type": "integer"
+        },
+        "popupHeight": {
+          "type": "integer"
+        }
+      }
+    },
+    "reportConfig": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "type": "array"
+        },
+        "content": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "object"
+            },
+            "orientation": {
+              "type": "string",
+              "enum": [
+                "Portrait",
+                "Landscape"
+              ],
+              "default": "Landscape"
+            },
+            "pageSize": {
+              "type": "string",
+              "enum": [
+                "A4",
+                "A3",
+                "Letter",
+                "Legal"
+              ],
+              "default": "A4"
+            }
+          }
+        },
+        "sumColumns": {
+          "type": "array"
+        },
+        "groups": {
+          "type": "array"
+        },
+        "storedProcedure": {
+          "type": "string"
+        }
+      }
+    },
+    "dashboardConfig": {
+      "type": "object"
+    },
+    "approvalConfig": {
+      "type": "object"
+    }
+  },
+  "definitions": {
+    "panelDef": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "panelExplorer",
+            "panelEditor",
+            "panelReporter",
+            "panelDetail",
+            "panelFilter",
+            "panelHeader",
+            "panelFooter"
+          ]
+        },
+        "controls": {
+          "type": "array"
+        },
+        "docked": {
+          "type": "string",
+          "enum": [
+            "Top",
+            "Bottom",
+            "Left",
+            "Right",
+            "Fill"
+          ],
+          "default": "Fill"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        }
+      }
+    },
+    "toolbarButton": {
+      "type": "object",
+      "required": [
+        "name",
+        "action"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "Add",
+            "Edit",
+            "Delete",
+            "Refresh",
+            "Export",
+            "Print",
+            "Approve",
+            "Reject",
+            "Custom"
+          ]
+        },
+        "text": {
+          "type": "object"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "boolean",
+          "default": true
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "position": {
+          "type": "integer"
+        },
+        "shortcut": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "defaults": {
+    "Explorer": {
+      "toolbar": [
+        {
+          "name": "btnAdd",
+          "action": "Add"
+        },
+        {
+          "name": "btnEdit",
+          "action": "Edit"
+        },
+        {
+          "name": "btnDelete",
+          "action": "Delete"
+        },
+        {
+          "name": "btnRefresh",
+          "action": "Refresh"
+        },
+        {
+          "name": "btnExport",
+          "action": "Export"
+        }
+      ]
+    },
+    "Editor": {
+      "toolbar": [
+        {
+          "name": "btnSave",
+          "action": "Custom"
+        },
+        {
+          "name": "btnCancel",
+          "action": "Custom"
+        }
+      ]
+    },
+    "Report": {
+      "toolbar": [
+        {
+          "name": "btnPreview",
+          "action": "Custom"
+        },
+        {
+          "name": "btnPrint",
+          "action": "Print"
+        },
+        {
+          "name": "btnExport",
+          "action": "Export"
+        }
+      ]
+    }
+  }
+}
