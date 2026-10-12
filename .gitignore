@@ -23,6 +23,7 @@ knowledge/**/*.html
 # Generated/imported customer work
 output/
 Import/
+.work_pdf_text/
 
 # OS/editor noise
 Thumbs.db

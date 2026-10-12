@@ -6,10 +6,11 @@ Repo này là gói kiến thức để AI đọc hiểu Bravo ERP: cấu trúc l
 
 1. `AGENTS.md` - quy tắc an toàn và phạm vi làm việc.
 2. `docs/00-ai-operating-guide.md` - cách AI tiếp cận một yêu cầu Bravo.
-3. `docs/04-layout/bravo-tag-handbook.md` - kiến thức từng thẻ Bravo thường gặp.
-4. `docs/01-business/` - mô hình nghiệp vụ và luồng dữ liệu.
-5. `docs/04-layout/`, `docs/05-datasource/`, `docs/09-layout-gen/` - layout, datasource, generator patterns.
-6. `knowledge/README.md` - nơi đặt schema/layout đã trích xuất ở local nếu có.
+3. `docs/00-bravo-full-tag-index.md` - danh mục thẻ đầy đủ theo bộ tài liệu Bravo đã cung cấp.
+4. `docs/04-layout/bravo-tag-handbook.md` - giải thích chi tiết nhóm thẻ hay dùng.
+5. `docs/01-business/` - mô hình nghiệp vụ và luồng dữ liệu.
+6. `docs/04-layout/`, `docs/05-datasource/`, `docs/09-layout-gen/` - layout, datasource, generator patterns.
+7. `knowledge/README.md` - nơi đặt schema/layout đã trích xuất ở local nếu có.
 
 ## Cấu Trúc
 
